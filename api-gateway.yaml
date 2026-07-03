@@ -5,12 +5,17 @@ spring:
   application:
     name: api-gateway
 
+  config:
+    import: optional:configserver:http://localhost:8888
+
   cloud:
     gateway:
-      discovery:
-        locator:
-          enabled: true
-          lower-case-service-id: false
+      server:
+        webflux:
+          discovery:
+            locator:
+              enabled: true
+              lower-case-service-id: false
       routes:
         - id: auth-service
           uri: lb://AUTH-SERVICE
@@ -21,7 +26,11 @@ spring:
           uri: lb://EMPLOYEE-SERVICE
           predicates:
             - Path=/api/employees/**
-
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: employeeServiceCircuitBreaker
+                fallbackUri: forward:/fallback/employee
 eureka:
   client:
     register-with-eureka: true
@@ -35,6 +44,19 @@ management:
       exposure:
         include: "*"
 
+  endpoint:
+    gateway:
+      access: unrestricted
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      employeeServiceCircuitBreaker:
+        sliding-window-size: 5
+        minimum-number-of-calls: 5
+        permitted-number-of-calls-in-half-open-state: 2
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 30s
 
 jwt:
   secret-key: 1234567890123456789012345678901234567890123456789012345678901234
