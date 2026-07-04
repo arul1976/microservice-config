@@ -15,6 +15,9 @@ spring:
       properties:
         spring.json.trusted.packages: "*"
 
+    listener:
+      missing-topics-fatal: false
+
 eureka:
   client:
     service-url:
