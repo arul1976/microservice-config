@@ -39,11 +39,17 @@ management:
   endpoints:
     web:
       exposure:
-        include: "*"
+        include: health,info,prometheus,metrics
 
   endpoint:
     gateway:
       access: unrestricted
+    health:
+      show-details: always
+
+  metrics:
+    tags:
+      application: api-gateway
 
 resilience4j:
   circuitbreaker:
